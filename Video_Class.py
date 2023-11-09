@@ -4,15 +4,8 @@ class Video:
         self.name = str(name)
         self.year = int(year)
         self.director = str(director)
-        self.rating = int(rating)
+        self.rating = float(rating)
         self.genre = str(genre)
-        """
-        For the most part, if they are adding a new video to the inventory
-        it would likely be something they just recived. 
-        
-        Should rental status be innitalized as not rented?
-        Would that save time?
-        """
         self.rentalStatus = str(rentalStatus)
         
     def getName(self):
@@ -32,7 +25,9 @@ class Video:
         
     def getRentalStatus(self):
         return self.rentalStatus
-
+    
+    def getInfo(self):
+        return f"Name: {self.name} / Year: {self.year} / Director: {self.Director} / Rating: {self.rating} / Genre: {self.genre} / Rental Status: {self.rentalStatus}"
 
     def editName(self, name):
         self.name = name
