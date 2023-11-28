@@ -2,6 +2,10 @@ import tkinter as tk
 from tkinter import ttk
 from tkinter import messagebox
 import re
+from Video_Class import Video
+from Inventory_List_Class import Inventory_List
+from pickle import Pickler
+from pickle import Unpickler
 
 root = tk.Tk()
 root.title('Inventory System for Blockbuster Video')
@@ -260,6 +264,39 @@ video_list.grid(row=1, column=0, padx=10, pady=5, rowspan=4)
 # Original video data (for filtering purposes)
 original_video_data = []
 
+#Load Saved Storage
+def loadStorage():
+    
+    def load_video_list(saved_list):
+        for i in saved_list.inventory_list:
+            title = i.name
+            year = i.year
+            director = i.director
+            genre = i.genre
+            rating = i.rating
+    
+            video_list.insert(tk.END, f"{title} - {year} - {director} - {genre} - {rating}")
+    
+            # Update the original_video_data list
+            original_video_data.append(f"{title} - {year} - {director} - {genre} - {rating}")
+    
+    load_storage = open('storage.txt', 'rb')
+    
+    try:
+        storage = Unpickler(load_storage).load()
+        load_video_list(storage)
+        load_storage.close()
+        return storage
+        
+    except:
+        print("Initializing New Data Storage.")
+        storage = Inventory_List()
+        load_storage.close()
+    
+    return storage
+
+inventory = loadStorage()
+
 #buttons in video frame
 # Buttons in video frame
 def add_video():
@@ -300,7 +337,11 @@ def add_video():
 
         # Update the original_video_data list
         original_video_data.append(f"{title} - {year} - {director} - {genre} - {rating}")
-
+        
+        #New Stuff By ME
+        inventory.add_video(title, year, director, rating, genre, "Unrented") #change later
+        
+        
         add_window.destroy()
 
     tk.Button(add_window, text="Save", command=save_video).grid(row=5, column=0, columnspan=2, pady=10)
@@ -319,10 +360,17 @@ def remove_video():
     confirmation = messagebox.askokcancel("Confirm Deletion", f"Do you want to remove the video:\n{video_name}")
 
     if confirmation:
+        index = 0
+        for i in original_video_data:
+            if i == video_name:
+                inventory.inventory_list.pop(index)
+                original_video_data.pop(index)
+                break
+            index += 1
         video_list.delete(selected_index)
 
         # Remove the video from the original_video_data list
-        original_video_data.pop(selected_index)
+
 
 def edit_video():
     # Function to be executed when "Edit Video" button is clicked
@@ -375,12 +423,29 @@ def edit_video():
         # Perform any validation or processing needed
 
         # Update the video_list with the edited video information
+        
+        
+        video_name = video_list.get(selected_index)
+        print(video_name)
+        for i in original_video_data:
+            index = 0
+            if i == video_name:
+                original_video_data.pop(index)
+                original_video_data.append( f"{edited_title} - {edited_year} - \
+                                           {edited_director} - {edited_genre} - \
+                                               {edited_rating}")
+                print('hello')
+                print(inventory.inventory_list[index].name)
+                inventory.inventory_list.pop(index)
+                inventory.add_video(edited_title, edited_year, edited_director, \
+                                    edited_rating, edited_genre, 'Unrented')
+                break
+                
+            index += 1
+        
         video_list.delete(selected_index)
         video_list.insert(tk.END, f"{edited_title} - {edited_year} - {edited_director} - {edited_genre} - {edited_rating}")
-
-        original_video_data.pop(selected_index)
-        original_video_data.append( f"{edited_title} - {edited_year} - {edited_director} - {edited_genre} - {edited_rating}")
-
+        
         # Close the edit_window
         edit_window.destroy()
 
@@ -460,5 +525,12 @@ t4_scrollbar.pack(side="left", fill="y")
 tk.Button(rental, text="Rent Video").pack()
 tk.Button(returnn, text="Return Video").pack()
 
+def onClosing():
+    storage = open('storage.txt', 'wb')
+    Pickler(storage).dump(inventory)
+    storage.close()
+    root.destroy()
+
+root.protocol("WM_DELETE_WINDOW", onClosing)
 
 root.mainloop()
