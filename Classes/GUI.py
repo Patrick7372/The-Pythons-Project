@@ -146,7 +146,7 @@ def valid_genre(g):
 
 def valid_rating(r):
     rating = r.get()
-    valid_ratings = ["PG", "R", "PG-13", "G"]
+    valid_ratings = ["PG", "R", "PG-13", "G", "Unrated"]
     if not rating:
         messagebox.showerror("Error", "Rating cannot be empty")
         return False
@@ -414,16 +414,21 @@ def remove_video():
 
     selected_index = selected_indices[0]
 
-    video_name = video_list.get(selected_index)
-    video_title = video_name.split()[0]
+    video_info = video_list.get(selected_index)
+    video_title = video_info.split()[0]
     confirmation = messagebox.askokcancel("Confirm Deletion", f"Do you want to remove the video:\n{video_title}")
 
     if confirmation:
+        index = 0
+        for i in original_video_data:
+            if i == video_info:
+                original_video_data.pop(index)
+                break
+            index += 1
+        print(original_video_data)
+        
         InventoryList.remove_video(video_title)
         video_list.delete(selected_index)
-
-        # Remove the video from the original_video_data list
-        original_video_data.pop(selected_index)
 
         update_t2_with_video_list()
 
@@ -475,18 +480,27 @@ def edit_video():
             edited_genre = genre_entry.get()
             edited_rating = rating_entry.get()
 
+    
             # Update the video_list with the edited video information
-            video_info = video_list.get(selected_index)
             video_title = video_info.split()[0]
+
+            # Removes video from original_video_data, works when the list is filtered
+            index = 0
+            for i in original_video_data:
+                if i == video_info:
+                    original_video_data.pop(index)
+                    original_video_data.append( f"{edited_title} - {edited_year} - {edited_director} - {edited_genre} - {edited_rating}")
+                    break
+                index += 1
+            print(original_video_data)
+
             InventoryList.remove_video(video_title)
             video_list.delete(selected_index)
-        
+            
             video_list.insert(tk.END, f"{edited_title} - {edited_year} - {edited_director} - {edited_genre} - {edited_rating}")
-            InventoryList.add_video(edited_title, edited_year, edited_director, edited_rating, edited_genre, "Available")
-
-            original_video_data.pop(selected_index)
-            original_video_data.append( f"{edited_title} - {edited_year} - {edited_director} - {edited_genre} - {edited_rating}")
-
+            InventoryList.add_video(title, year, director, rating, genre, "Available")
+    
+   
             update_t2_with_video_list()
         
             # Close the edit_window
