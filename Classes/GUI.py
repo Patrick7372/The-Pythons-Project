@@ -201,9 +201,8 @@ def update_t1_with_customer_list():
         t1.insert(tk.END, item)
 
 def update_t2_with_video_list():
-    videos = InventoryList.get_inventory()
     t2.delete(0, tk.END)  # Clear the existing items in the list
-    for video in videos:
+    for video in InventoryList.inventory_list:
         if video.getRentalStatus() == "Available":
             t2.insert(tk.END, f"{video.getName()} - {video.getYear()} - {video.getDirector()} - {video.getGenre()} - {video.getRating()} - {video.getRentalStatus()}")
 
@@ -813,7 +812,6 @@ def read_inventory():
         
         #Update video list on rental/return tabs
         update_t2_with_video_list()
-        update_t4_with_video_list()
 
 def write_inventory():
     with open("inventory.json", "w") as f:
